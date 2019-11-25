@@ -13,7 +13,7 @@ import pandas as pd
 # url = 'https://www.collabra.org/1/volume/1/issue/1/'
 # page = requests.get(url)
 
-infile = open("xml_3.xml","r")
+infile = open("xml_4.xml","r")
 contents = infile.read()
 
 meta = []
@@ -49,13 +49,21 @@ else:
     conflict = "NA"
     print("conf_in", conflict)
 # peer review url
-if soup.select_one('sec:contains("Peer review comments")') != None:
-    peer_review = soup.select_one('sec:contains("Peer review comments")')
-    peer_rev = peer_review.find('uri').get_text()
+a = [p.get_text() for p in soup.find_all('sec') if bool(re.search("peer review", p.get_text(), re.IGNORECASE))]
+if a != []:
+    peer_rev_url = re.search("http:.*", a[0]).group(0)
 else:
-    peer_rev = "NA"
+    peer_rev_url = "NA"
 
-print("peer rev", peer_rev)
+# if soup.select_one('sec:contains("peer review comments")') != None:
+#     peer_review = soup.select_one('sec:contains("Peer review comments")')
+#     peer_rev = peer_review.find('uri').get_text()
+# else:
+#     peer_rev = "NA"
+#
+
+print("peer rev", peer_rev_url)
+
 
 # html url
 s = str(soup.find("self-uri"))
@@ -74,54 +82,63 @@ else:
 
 print(acknow)
 
-
-# if soup.select_one('sec:contains("Materials and Methods")') != None:
-#     method  = soup.select_one('sec:contains("Materials and Methods")')
-# elif soup.select_one('sec:contains("Materials and Method")') != None:
-#     method  = soup.select_one('sec:contains("Materials and Method")')
-# else:
-#     method = "NA"
-
-# print(method)
-# data_url = method.find("ext-link").get_text()
-
-text_soup = soup.find_all(text = True)
-text_soup_1 = [str(text) for text in text_soup]
-for i in text_soup_1:
-    print(i)
-
 # function to get unique values
 def unique(list1):
-
     # intilize a null list
     unique_list = []
-
     # traverse for all elements
     for x in list1:
         # check if exists in unique_list or not
         if x not in unique_list:
             unique_list.append(x)
-    # print list
-    for x in unique_list:
-        print x,
+    return unique_list
 
 
-print(type(text_soup_1))
+# all osf links
+text_soup = soup.find_all(text = True)
+text_soup_1 = [str(text) for text in text_soup]
+
 r = re.compile(".*osf.*")
 osf_list = list(filter(r.match, text_soup_1)) # Read Note
-print(newlist)
-# text_soup_1 = (i.get_text() for i in text_soup)
+osf_url = unique(osf_list)
+if osf_url == []:
+    osf_url = "NA"
 
+# Funding info
+if soup.select_one('sec:contains("Funding Information")') != None:
+    fund = soup.select_one('sec:contains("Funding Information")')
+    fund_info = [f.get_text() for f in fund.find_all('p')]
+else:
+    fund_info = "NA"
+
+print(fund_info)
+
+# Author Contribution info
+if soup.select_one('sec:contains("Author Contribution")') != None:
+    author_c = soup.select_one('sec:contains("Author Contribution")')
+    author_cont = [ac.get_text() for ac in author_c.find_all('p')]
+else:
+    author_cont =  "NA"
+
+print(author_cont)
+
+b = [p for p in soup.select('sec') if bool(re.search("data accessibility", p.get_text(), re.IGNORECASE))]
+print(b.find('p'))
+# print(b)
+
+
+
+# osf? More links -> Acknowledgment, data statement, itd.
+# text_soup_1 = (i.get_text() for i in text_soup)
+#
 # for i in text_soup:
 #     print(i)
 # print(text_soup_1)
 # print(re.match("osf", text_soup))
-
+#
 # sentence data and link
 # print(data_url)
 
 
 
 # print(method.find('uri'))
-
-print("sth")
