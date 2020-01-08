@@ -9,15 +9,17 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'example_1'
+BOT_NAME = 'journals_metadata_sic'
 
-SPIDER_MODULES = ['example_1.spiders']
-NEWSPIDER_MODULE = 'example_1.spiders'
+SPIDER_MODULES = ['journals_metadata.spiders']
+NEWSPIDER_MODULE = 'journals_metadata_wra.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
 #USER_AGENT = 'example_1 (+http://www.yourdomain.com)'
-
+FEED_EXPORTERS = {
+    'xlsx': 'scrapy_xlsx.XlsxItemExporter',
+}
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
