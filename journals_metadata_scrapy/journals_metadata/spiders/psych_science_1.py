@@ -24,12 +24,14 @@
 import scrapy
 import re
 import pandas as pd
+import numpy as np
+from scrapy.crawler import CrawlerProcess
 
-# load from dataset
 dataset = pd.read_excel('psyche_science.xlsx')
 
-class PsychScienceSpider(scrapy.Spider):
+class PsychScienceSpider_1(scrapy.Spider):
     name = 'psych_science_get_metadata'
+    # load from dataset
 
     def start_requests(self):
         urls = dataset['link']
@@ -37,29 +39,24 @@ class PsychScienceSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse)
 
     def parse(self, response):
+        for i in response.xpath('//*'):
+            yield {
+            # title
+            'title': response.xpath('normalize-space(.//h1)').get(),
+            # 'volume': dataset['volume'],
+            # 'issue': dataset['issue'],
+            # 'year': dataset['year']
+            }
 
-        # get title
-        title = response.xpath('normalize-space(.//h1)').get()
 
 
 
 
 
-        # scrap open_access articles with at least 2 badges
-        for article in response.css('tr'):
-            access = article.css('.accessIconContainer div').xpath('./img/@alt').get()
-            if access != "No Access" and access != None:
-                badge = article.css('.accessIconContainer').xpath('./following-sibling::td[@valign="top"]/div[@class = "tocDeliverFormatsLinks"]')
-                open_data = badge.css('img[class="openData"]')
-                open_material = badge.css('img[class="openMaterial"]')
-                prereg = badge.css('img[class="preregistration"]')
-                if ((open_data != [] and open_material != []) or
-                (open_data != [] and prereg != []) or
-                (open_material != [] and prereg != [])):
-                    vol_issue = response.css('div[class="journalNavTitle"]::text').get()
-                    link = f"{HOME}{badge.css('a::attr(href)').get()}"
-                    yield {
-                    'access': access,
-                    'link' : link,
-                    'vol_issue' : vol_issue.strip()
-                    }
+#
+# process = CrawlerProcess()
+#
+# process.crawl(PsychScienceSpider_1)
+# process.start()
+
+# dataset.to_excel("psych_science_final.xlsx", encoding = 'utf-8', index = False)

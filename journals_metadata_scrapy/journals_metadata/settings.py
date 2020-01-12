@@ -1,18 +1,18 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for example_1 project
-#
-# For simplicity, this file contains only settings considered important or
-# commonly used. You can find more settings consulting the documentation:
+# Scrapy settings for Scraping Metadata from Psychological Science project
+
+
+# You can find more settings consulting the documentation:
 #
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'journals_metadata_sic'
+BOT_NAME = 'journals_metadata'
 
 SPIDER_MODULES = ['journals_metadata.spiders']
-NEWSPIDER_MODULE = 'journals_metadata_wra.spiders'
+NEWSPIDER_MODULE = 'journals_metadata.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
