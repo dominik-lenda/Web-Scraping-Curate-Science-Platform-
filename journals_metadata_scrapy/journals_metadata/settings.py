@@ -9,7 +9,7 @@
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'journals_metadata'
+BOT_NAME = 'psych_science'
 
 SPIDER_MODULES = ['journals_metadata.spiders']
 NEWSPIDER_MODULE = 'journals_metadata.spiders'

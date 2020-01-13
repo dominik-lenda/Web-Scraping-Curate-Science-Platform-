@@ -21,11 +21,15 @@ import scrapy
 
 class Psych_Science_Metadata(scrapy.Item):
     title = scrapy.Field()
-    open_access = scrapy.Field()
     year = scrapy.Field()
     volume = scrapy.Field()
     issue = scrapy.Field()
     doi = scrapy.Field()
-    # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    abstract = scrapy.Field()
+    keywords = scrapy.Field()
+    url = scrapy.Field()
+    pdf_url = scrapy.Field()
+    conflict_of_interests = scrapy.Field()
+    funding = scrapy.Field()
+    open_practices = scrapy.Field()
+    acknowledgements = scrapy.Field()
