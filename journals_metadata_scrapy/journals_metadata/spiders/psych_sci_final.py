@@ -1,5 +1,7 @@
 import scrapy
 import re
+# from scrapy.shell import inspect_response
+import json
 
 # 3. Psychological Science: all articles since badges started in 2014 that have an
 # "Open Practices" statement, i.e., starting at Volume 25 Issue 5, May 2014
@@ -14,7 +16,6 @@ import re
 # number of views, number of downloads
 
 HOME = "https://journals.sagepub.com"
-
 
 
 class PsychScienceSpider(scrapy.Spider):
@@ -52,30 +53,55 @@ class PsychScienceSpider(scrapy.Spider):
                 if ((open_data != [] and open_material != []) or
                 (open_data != [] and prereg != []) or
                 (open_material != [] and prereg != [])):
-                    open_article_url = f"{HOME}{badge.css('a::attr(href)').get()}"
+                    path = './td[@valign="top"]/div/a[@data-item-name="click-article-title"]/@href'
+                    open_article_url = f'{HOME}{article.xpath(path).get()}'
                     yield scrapy.Request(open_article_url, callback = self.parse_article)
+
 
     def parse_article(self, response):
         def extract_data(title):
+            p_tags_values = []
             for p_tag in response.xpath('//span[@class="NLM_fn"]'):
-                if p_tag.xpath(f'./p/span[contains(text(), "{title}")]') != []:
-                    full_text_list = p_tag.xpath('descendant-or-self::*/text()').getall()
-                    return ''.join(full_text_list[1::])
-        vol_issue_year = response.css('div[class="tocLink"] a::text').get()
+                # check if any of elements is NA, allows to save clear data
+                p_tags_values.append(p_tag.xpath(f'./p/span[contains(text(), "{title}")]').get())
+                show_NA = [element != None for element in p_tags_values]
 
+            bool = any(show_NA)
+            if bool == True:
+                for p_tag in response.xpath('//span[@class="NLM_fn"]'):
+                    if p_tag.xpath(f'./p/span[contains(text(), "{title}")]').get() != None:
+                        full_text_list = p_tag.xpath('descendant-or-self::*/text()').getall()
+                        full_text = ''.join(full_text_list[1::]).strip()
+                return full_text
+            else:
+                return "NA"
+
+
+        def get_info_or_NA(query):
+            if response.xpath(query).get() != '':
+                return response.xpath(query).get()
+            else:
+                return "NA"
+
+        vol_issue_year = response.css('div[class="tocLink"] a::text').get()
+        doi = response.css('a[class="doiWidgetLink"]::text').get()
+        # extract_data("Author Contribution")
         yield {
-        'title': response.xpath('normalize-space(//h1/text())').get().strip(),
+        'title': response.xpath('normalize-space(//h1)').get(),
         'volume': re.search("Vol(.\d+)", vol_issue_year).group(1).strip(),
         'issue': re.search("Issue(.\d+)", vol_issue_year).group(1).strip(),
         'year':  re.search("\d{4}$", vol_issue_year).group(0),
-        'doi': response.css('a[class="doiWidgetLink"]::text').get(),
+        'doi': doi,
+        'article_type': get_info_or_NA('//span[@class = "ArticleType"]/span/text()'),
         'abstract': response.xpath('normalize-space(//*[@class="abstractSection abstractInFull"]/p)').getall()[0],
         'keywords': ', '.join(response.css('kwd-group a::text').getall()),
         'url': response.request.url,
         'pdf_url': f"""{HOME}{response.css('a[data-item-name="download-PDF"]::attr(href)').get()}""",
-        # 'conflict_of_interests': extract_data("Declaration"),
-        # 'funding': extract_data("Funding"),
-        # 'open_practices': extract_data("Open Practice"),
+        'acknowledgements': get_info_or_NA('normalize-space(//div[@class="acknowledgement"]/p)'),
+        'authors_contribution': extract_data("Author Contribution"),
+        'conflict_of_interests': extract_data("Declaration of Conflicting Interests"),
         'funding': extract_data("Funding"),
-        'acknow': response.xpath('normalize-space(//div[@class="acknowledgement"]/p)').get(),
+        'open_practices': extract_data("Open Practice"),
+        'altmetrics_score' : altmetrics_score,
+        'altmetrics_total_output' : total_outputs
         }
