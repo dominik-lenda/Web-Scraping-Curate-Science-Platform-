@@ -1,7 +1,6 @@
 import scrapy
 import re
 # from scrapy.shell import inspect_response
-import json
 
 # 3. Psychological Science: all articles since badges started in 2014 that have an
 # "Open Practices" statement, i.e., starting at Volume 25 Issue 5, May 2014
@@ -102,6 +101,4 @@ class PsychScienceSpider(scrapy.Spider):
         'conflict_of_interests': extract_data("Declaration of Conflicting Interests"),
         'funding': extract_data("Funding"),
         'open_practices': extract_data("Open Practice"),
-        'altmetrics_score' : altmetrics_score,
-        'altmetrics_total_output' : total_outputs
         }
