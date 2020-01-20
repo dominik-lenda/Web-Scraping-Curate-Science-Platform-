@@ -86,45 +86,37 @@ class PsychScienceSpider(scrapy.Spider):
             else:
                 return "NA"
 
+        item = Psych_Science_Metadata()
 
         vol_issue_year = response.css('div[class="tocLink"] a::text').get()
         doi = response.css('a[class="doiWidgetLink"]::text').get()
-        # extract_data("Author Contribution")
-        # yield {
-        # 'title': response.xpath('normalize-space(//h1)').get(),
-        # 'volume': re.search("Vol(.\d+)", vol_issue_year).group(1).strip(),
-        # 'issue': re.search("Issue(.\d+)", vol_issue_year).group(1).strip(),
-        # 'year':  re.search("\d{4}$", vol_issue_year).group(0),
-        # 'doi': doi,
-        # 'article_type': get_info_or_NA('//span[@class = "ArticleType"]/span/text()'),
-        # 'abstract': response.xpath('normalize-space(//*[@class="abstractSection abstractInFull"]/p)').getall()[0],
-        # 'keywords': ', '.join(response.css('kwd-group a::text').getall()),
-        # 'url': response.request.url,
-        # 'pdf_url': f"""{HOME}{response.css('a[data-item-name="download-PDF"]::attr(href)').get()}""",
-        # 'acknowledgements': get_info_or_NA('normalize-space(//div[@class="acknowledgement"]/p)'),
-        # 'authors_contribution': extract_data("Author Contribution"),
-        # 'conflict_of_interests': extract_data("Declaration of Conflicting Interests"),
-        # 'funding': extract_data("Funding"),
-        # 'open_practices': extract_data("Open Practice"),
-        # }
-        item = Psych_Science_Metadata()
-        # l = ItemLoader(Psych_Science_Metadata(), response = response)
-        # item['url'] = response.request.url
+        extract_data("Author Contribution")
+        item['title'] = response.xpath('normalize-space(//h1)').get()
+        item['volume'] = re.search("Vol(.\d+)", vol_issue_year).group(1).strip()
+        item['issue'] = re.search("Issue(.\d+)", vol_issue_year).group(1).strip()
+        item['year'] =  re.search("\d{4}$", vol_issue_year).group(0)
         item['doi'] = doi
+        item['article_type'] = get_info_or_NA('//span[@class = "ArticleType"]/span/text()')
+        item['abstract'] = response.xpath('normalize-space(//*[@class="abstractSection abstractInFull"]/p)').getall()[0]
+        item['keywords'] = ', '.join(response.css('kwd-group a::text').getall())
+        item['url'] = response.request.url
+        item['pdf_url'] = f"""{HOME}{response.css('a[data-item-name="download-PDF"]::attr(href)').get()}"""
+        item['acknowledgements'] = get_info_or_NA('normalize-space(//div[@class="acknowledgement"]/p)')
+        item['author_contributions'] = extract_data("Author Contribution")
+        item['conflict_of_interests'] = extract_data("Declaration of Conflicting Interests")
+        item['funding'] = extract_data("Funding")
+        item['open_practices'] = extract_data("Open Practice")
 
-        # yield item
         api_altmetric_home = "https://api.altmetric.com/v1/doi/"
         altmetric_urls = f'{api_altmetric_home}{re.sub("https://doi.org/", "", doi)}'
         request = scrapy.Request(altmetric_urls, callback = self.parse_altmetrics)
         request.meta['item'] = item
         yield request
-        # return l.load_item()
 
     def parse_altmetrics(self, response):
         item = response.meta["item"]
-        # item = Psych_Science_Metadata()
         dictionary_txt = response.css('p::text').get()
         d = json.loads(dictionary_txt)
-        item['altmetrics'] = d['score']
-
+        item['altmetrics_score'] = d['score']
+        item['altmetrics_total_outputs'] = d['context']['all']['count']
         return item
