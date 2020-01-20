@@ -1,6 +1,6 @@
 import scrapy
 import re
-# from scrapy.shell import inspect_response
+from scrapy.shell import inspect_response
 
 # 3. Psychological Science: all articles since badges started in 2014 that have an
 # "Open Practices" statement, i.e., starting at Volume 25 Issue 5, May 2014
@@ -42,9 +42,11 @@ class PsychScienceSpider(scrapy.Spider):
         """Get articles with at least two badges: open data and open material, or
         open data and preregistration, or open material and preregistration.
         """
+
         for article in response.css('tr'):
             access = article.css('.accessIconContainer div').xpath('./img/@alt').get()
-            if access != "No Access" and access != None:
+
+            if (access != "No Access" and access != None):
                 badge = article.css('.accessIconContainer').xpath('./following-sibling::td[@valign="top"]/div[@class = "tocDeliverFormatsLinks"]')
                 open_data = badge.css('img[class="openData"]')
                 open_material = badge.css('img[class="openMaterial"]')
@@ -64,7 +66,6 @@ class PsychScienceSpider(scrapy.Spider):
                 # check if any of elements is NA, allows to save clear data
                 p_tags_values.append(p_tag.xpath(f'./p/span[contains(text(), "{title}")]').get())
                 show_NA = [element != None for element in p_tags_values]
-
             bool = any(show_NA)
             if bool == True:
                 for p_tag in response.xpath('//span[@class="NLM_fn"]'):
