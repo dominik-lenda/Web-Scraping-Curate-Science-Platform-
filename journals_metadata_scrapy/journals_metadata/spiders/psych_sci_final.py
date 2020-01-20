@@ -1,6 +1,10 @@
 import scrapy
 import re
-from scrapy.shell import inspect_response
+# from scrapy.shell import inspect_response
+from journals_metadata.items import Psych_Science_Metadata
+from scrapy.loader import ItemLoader
+
+import json
 
 # 3. Psychological Science: all articles since badges started in 2014 that have an
 # "Open Practices" statement, i.e., starting at Volume 25 Issue 5, May 2014
@@ -45,7 +49,6 @@ class PsychScienceSpider(scrapy.Spider):
 
         for article in response.css('tr'):
             access = article.css('.accessIconContainer div').xpath('./img/@alt').get()
-
             if (access != "No Access" and access != None):
                 badge = article.css('.accessIconContainer').xpath('./following-sibling::td[@valign="top"]/div[@class = "tocDeliverFormatsLinks"]')
                 open_data = badge.css('img[class="openData"]')
@@ -83,23 +86,45 @@ class PsychScienceSpider(scrapy.Spider):
             else:
                 return "NA"
 
+
         vol_issue_year = response.css('div[class="tocLink"] a::text').get()
         doi = response.css('a[class="doiWidgetLink"]::text').get()
         # extract_data("Author Contribution")
-        yield {
-        'title': response.xpath('normalize-space(//h1)').get(),
-        'volume': re.search("Vol(.\d+)", vol_issue_year).group(1).strip(),
-        'issue': re.search("Issue(.\d+)", vol_issue_year).group(1).strip(),
-        'year':  re.search("\d{4}$", vol_issue_year).group(0),
-        'doi': doi,
-        'article_type': get_info_or_NA('//span[@class = "ArticleType"]/span/text()'),
-        'abstract': response.xpath('normalize-space(//*[@class="abstractSection abstractInFull"]/p)').getall()[0],
-        'keywords': ', '.join(response.css('kwd-group a::text').getall()),
-        'url': response.request.url,
-        'pdf_url': f"""{HOME}{response.css('a[data-item-name="download-PDF"]::attr(href)').get()}""",
-        'acknowledgements': get_info_or_NA('normalize-space(//div[@class="acknowledgement"]/p)'),
-        'authors_contribution': extract_data("Author Contribution"),
-        'conflict_of_interests': extract_data("Declaration of Conflicting Interests"),
-        'funding': extract_data("Funding"),
-        'open_practices': extract_data("Open Practice"),
-        }
+        # yield {
+        # 'title': response.xpath('normalize-space(//h1)').get(),
+        # 'volume': re.search("Vol(.\d+)", vol_issue_year).group(1).strip(),
+        # 'issue': re.search("Issue(.\d+)", vol_issue_year).group(1).strip(),
+        # 'year':  re.search("\d{4}$", vol_issue_year).group(0),
+        # 'doi': doi,
+        # 'article_type': get_info_or_NA('//span[@class = "ArticleType"]/span/text()'),
+        # 'abstract': response.xpath('normalize-space(//*[@class="abstractSection abstractInFull"]/p)').getall()[0],
+        # 'keywords': ', '.join(response.css('kwd-group a::text').getall()),
+        # 'url': response.request.url,
+        # 'pdf_url': f"""{HOME}{response.css('a[data-item-name="download-PDF"]::attr(href)').get()}""",
+        # 'acknowledgements': get_info_or_NA('normalize-space(//div[@class="acknowledgement"]/p)'),
+        # 'authors_contribution': extract_data("Author Contribution"),
+        # 'conflict_of_interests': extract_data("Declaration of Conflicting Interests"),
+        # 'funding': extract_data("Funding"),
+        # 'open_practices': extract_data("Open Practice"),
+        # }
+        item = Psych_Science_Metadata()
+        # l = ItemLoader(Psych_Science_Metadata(), response = response)
+        # item['url'] = response.request.url
+        item['doi'] = doi
+
+        # yield item
+        api_altmetric_home = "https://api.altmetric.com/v1/doi/"
+        altmetric_urls = f'{api_altmetric_home}{re.sub("https://doi.org/", "", doi)}'
+        request = scrapy.Request(altmetric_urls, callback = self.parse_altmetrics)
+        request.meta['item'] = item
+        yield request
+        # return l.load_item()
+
+    def parse_altmetrics(self, response):
+        item = response.meta["item"]
+        # item = Psych_Science_Metadata()
+        dictionary_txt = response.css('p::text').get()
+        d = json.loads(dictionary_txt)
+        item['altmetrics'] = d['score']
+
+        return item
