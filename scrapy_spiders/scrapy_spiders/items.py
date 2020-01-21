@@ -7,6 +7,7 @@
 
 import scrapy
 
+
 class PsychScienceMetadata(scrapy.Item):
     title = scrapy.Field()
     year = scrapy.Field()

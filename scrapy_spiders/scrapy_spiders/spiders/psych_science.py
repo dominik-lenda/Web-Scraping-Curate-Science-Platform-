@@ -1,10 +1,10 @@
+# -*- coding: utf-8 -*-
 import scrapy
 import re
 from scrapy.shell import inspect_response
-from journals_metadata.items import PsychScienceMetadata
+from scrapy_spiders.items import PsychScienceMetadata
 from scrapy.loader import ItemLoader
 import json
-
 
 # 3. Psychological Science: all articles since badges started in 2014 that have an
 # "Open Practices" statement, i.e., starting at Volume 25 Issue 5, May 2014
@@ -20,9 +20,14 @@ import json
 
 HOME = "https://journals.sagepub.com"
 
-
 class PsychScienceSpider(scrapy.Spider):
     name = 'psych_science'
+
+    def start_requests(self):
+        start_urls = ['https://journals.sagepub.com/loi/PSS?year=2010-2019']
+        for url in start_urls:
+            yield scrapy.Request(url=url, callback=self.parse_year)
+
 
     def start_requests(self):
         start_urls = ['https://journals.sagepub.com/loi/PSS?year=2010-2019']

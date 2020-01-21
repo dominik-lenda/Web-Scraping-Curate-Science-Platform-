@@ -1,44 +1,45 @@
 # -*- coding: utf-8 -*-
 
-# Scrapy settings for Scraping Metadata from Psychological Science project
-
-
-# You can find more settings consulting the documentation:
+# Scrapy settings for scrapy_spiders project
+#
+# For simplicity, this file contains only settings considered important or
+# commonly used. You can find more settings consulting the documentation:
 #
 #     https://docs.scrapy.org/en/latest/topics/settings.html
 #     https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #     https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 
-BOT_NAME = 'psych_science'
+BOT_NAME = 'scrapy_spiders'
 
-SPIDER_MODULES = ['journals_metadata.spiders']
-NEWSPIDER_MODULE = 'journals_metadata.spiders'
+SPIDER_MODULES = ['scrapy_spiders.spiders']
+NEWSPIDER_MODULE = 'scrapy_spiders.spiders'
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-#USER_AGENT = 'example_1 (+http://www.yourdomain.com)'
+#USER_AGENT = 'scrapy_spiders (+http://www.yourdomain.com)'
+
+# use .xlsx as an alternative to save data
 FEED_EXPORTERS = {
     'xlsx': 'scrapy_xlsx.XlsxItemExporter',
 }
 
+# prepare data order for scraping Psychological Science
 FEED_EXPORT_FIELDS = ['title', 'year', 'volume', 'issue', 'doi', 'article_type',
 'abstract', 'article_type', 'keywords', 'url', 'pdf_url', 'conflict_of_interests',
 'author_contributions', 'funding', 'open_practices', 'acknowledgements',
 'altmetrics_score', 'altmetrics_total_outputs']
 
+
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
-# CONCURRENT_REQUESTS = 1
 #CONCURRENT_REQUESTS = 32
 
 # Configure a delay for requests for the same website (default: 0)
 # See https://docs.scrapy.org/en/latest/topics/settings.html#download-delay
 # See also autothrottle settings and docs
-# DOWNLOAD_DELAY = 4
 #DOWNLOAD_DELAY = 3
-
 # The download delay setting will honor only one of:
 #CONCURRENT_REQUESTS_PER_DOMAIN = 16
 #CONCURRENT_REQUESTS_PER_IP = 16
@@ -58,13 +59,13 @@ ROBOTSTXT_OBEY = True
 # Enable or disable spider middlewares
 # See https://docs.scrapy.org/en/latest/topics/spider-middleware.html
 #SPIDER_MIDDLEWARES = {
-#    'example_1.middlewares.Example1SpiderMiddleware': 543,
+#    'scrapy_spiders.middlewares.ScrapySpidersSpiderMiddleware': 543,
 #}
 
 # Enable or disable downloader middlewares
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 #DOWNLOADER_MIDDLEWARES = {
-#    'example_1.middlewares.Example1DownloaderMiddleware': 543,
+#    'scrapy_spiders.middlewares.ScrapySpidersDownloaderMiddleware': 543,
 #}
 
 # Enable or disable extensions
@@ -76,7 +77,7 @@ ROBOTSTXT_OBEY = True
 # Configure item pipelines
 # See https://docs.scrapy.org/en/latest/topics/item-pipeline.html
 #ITEM_PIPELINES = {
-#    'example_1.pipelines.Example1Pipeline': 300,
+#    'scrapy_spiders.pipelines.ScrapySpidersPipeline': 300,
 #}
 
 # Enable and configure the AutoThrottle extension (disabled by default)
