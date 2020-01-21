@@ -1,10 +1,10 @@
 import scrapy
 import re
-# from scrapy.shell import inspect_response
-from journals_metadata.items import Psych_Science_Metadata
+from scrapy.shell import inspect_response
+from journals_metadata.items import PsychScienceMetadata
 from scrapy.loader import ItemLoader
-
 import json
+
 
 # 3. Psychological Science: all articles since badges started in 2014 that have an
 # "Open Practices" statement, i.e., starting at Volume 25 Issue 5, May 2014
@@ -86,7 +86,7 @@ class PsychScienceSpider(scrapy.Spider):
             else:
                 return "NA"
 
-        item = Psych_Science_Metadata()
+        item = PsychScienceMetadata()
 
         vol_issue_year = response.css('div[class="tocLink"] a::text').get()
         doi = response.css('a[class="doiWidgetLink"]::text').get()

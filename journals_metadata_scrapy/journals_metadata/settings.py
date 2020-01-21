@@ -20,6 +20,12 @@ NEWSPIDER_MODULE = 'journals_metadata.spiders'
 FEED_EXPORTERS = {
     'xlsx': 'scrapy_xlsx.XlsxItemExporter',
 }
+
+FEED_EXPORT_FIELDS = ['title', 'year', 'volume', 'issue', 'doi', 'article_type',
+'abstract', 'article_type', 'keywords', 'url', 'pdf_url', 'conflict_of_interests',
+'author_contributions', 'funding', 'open_practices', 'acknowledgements',
+'altmetrics_score', 'altmetrics_total_outputs']
+
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
 
