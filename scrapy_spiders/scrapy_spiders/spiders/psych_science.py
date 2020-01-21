@@ -29,11 +29,6 @@ class PsychScienceSpider(scrapy.Spider):
             yield scrapy.Request(url=url, callback=self.parse_year)
 
 
-    def start_requests(self):
-        start_urls = ['https://journals.sagepub.com/loi/PSS?year=2010-2019']
-        for url in start_urls:
-            yield scrapy.Request(url=url, callback=self.parse_year)
-
     def parse_year(self, response):
         all_years = response.css('h4 a')
         for year in all_years:
