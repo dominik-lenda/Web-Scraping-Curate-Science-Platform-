@@ -23,6 +23,13 @@ HOME = "https://journals.sagepub.com"
 class PsychScienceSpider(scrapy.Spider):
     name = 'psych_science'
 
+    custom_settings = {
+    'FEED_EXPORT_FIELDS' : ['title', 'year', 'volume', 'issue', 'doi',
+    'article_type', 'abstract', 'article_type', 'keywords', 'url', 'pdf_url',
+    'conflict_of_interests', 'author_contributions', 'funding', 'open_practices',
+    'acknowledgements', 'altmetrics_score', 'altmetrics_total_outputs'],
+    }
+
     def start_requests(self):
         start_urls = ['https://journals.sagepub.com/loi/PSS?year=2010-2019']
         for url in start_urls:

@@ -24,11 +24,10 @@ FEED_EXPORTERS = {
 }
 
 # prepare data order for scraping Psychological Science
-FEED_EXPORT_FIELDS = ['title', 'year', 'volume', 'issue', 'doi', 'article_type',
-'abstract', 'article_type', 'keywords', 'url', 'pdf_url', 'conflict_of_interests',
-'author_contributions', 'funding', 'open_practices', 'acknowledgements',
-'altmetrics_score', 'altmetrics_total_outputs']
-
+# FEED_EXPORT_FIELDS = ['title', 'year', 'volume', 'issue', 'doi', 'article_type',
+# 'abstract', 'article_type', 'keywords', 'url', 'pdf_url', 'conflict_of_interests',
+# 'author_contributions', 'funding', 'open_practices', 'acknowledgements',
+# 'altmetrics_score', 'altmetrics_total_outputs']
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
