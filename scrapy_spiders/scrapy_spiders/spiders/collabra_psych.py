@@ -3,6 +3,9 @@ import scrapy
 from scrapy.shell import inspect_response
 import re
 from scrapy_spiders.items import CollabraPsychMetadata
+from scrapy.loader import ItemLoader
+from bs4 import BeautifulSoup
+
 
 
 HOME = 'https://www.collabra.org'
@@ -11,10 +14,10 @@ class CollabraPsychSpider(scrapy.Spider):
     name = 'collabra_psych'
 
     custom_settings = {
-    'FEED_EXPORT_FIELDS': ['title', 'publication_year', 'article_type', 'issue',
-    'volume', 'doi', 'abstract', 'keywords', 'url', 'pdf_url_download',
-    'peer_rev_url', 'conflict_of_interests', 'acknowledgements',
-    'data_acessibility', 'data_links', 'funding_info', 'author_contributions',
+    'FEED_EXPORT_FIELDS': ['title', 'publication_year', 'article_type', 'volume',
+    'issue', 'doi', 'abstract', 'keywords', 'url', 'pdf_url_download',
+    'peer_review_url', 'conflict_of_interests', 'acknowledgements',
+    'data_acessibility', 'data_accessibility_links', 'funding_info', 'author_contributions',
     'views', 'downloads', 'altmetrics_score', 'altmetrics_total_outputs'],
     }
 
@@ -36,107 +39,105 @@ caption-large"] a::attr(href)')
             full_url = f'{HOME}{url.get()}'
             yield scrapy.Request(url = full_url, callback = self.parse_volume)
 
-# remove collections; if articles or sth
     def parse_volume(self, response):
+        item = CollabraPsychMetadata()
         article_urls = response.css('div[class = "caption-text"] a::attr(href)')
+
+        # get volume and issue: first number after "volume" and first number
+        # after "issue" in the url
+        # inspect_response(response, self)
+        vol_issue_url = response.request.url
+        # item['volume'] = re.search("volume/(\d+)", vol_issue_url).group(1)
+        # item['issue'] = re.search("issue/(\d+)", vol_issue_url).group(1)
+
+        for url in article_urls:
         # some of article_urls include links to "collections";
         # avoid these links because they do not directly lead to the article
-        for url in article_urls:
             if bool(re.search("collection", url.get())):
                 continue
             full_url = f'{HOME}{url.get()}'
-            yield scrapy.Request(url = full_url, callback = self.parse_article)
+            request = scrapy.Request(url = full_url, callback = self.parse_article)
+            request.meta['item'] = item
+            yield request
 
     def parse_article(self, response):
-        item = CollabraPsychMetadata()
+        item = response.meta['item']
 
-        item['title'] = response.css('div[class="article-title"] h1::text').get()
-
-        year  = response.xpath('normalize-space(//div[@class="credit-block credit-separator"])').get()
-        item['publication_year'] = re.search("\d{4}$", year).group(0)
-
-        return(item)
-
-
-
-
-        # # get DOI
-        # doi = soup.find('article-id').text
-        # d['doi'].append(doi)
-        #
-        # # get info about the type of article
-        # art_type = soup.find('subject').text
-        # d['article_type'].append(art_type)
-        #
-        # # get abstract's content
-        # abs = soup.find('abstract')
-        # if abs != None:
-        #     abstract = abs.p.text
-        #     abstract = re.sub("\s\s+" , " ", abstract) # edit, remove more
-        #                                                # than one space
-        # else:
-        #     abstract = "NA"
-        # d['abstract'].append(abstract)
-        #
-        # # Keywords
-        # kwd = soup.find_all('kwd')
-        # keyword = [keyword.text for keyword in kwd]
-        # keys = ', '.join(keyword)
-        # if keys != '':
-        #     keywords = keys
-        # else:
-        #     keywords = 'NA'
-        # d['keywords'].append(keywords)
-        #
-        # conf_int = extract_text("sec", "conflict of interest|competing interests")
-        # d["conflict_of_interests"].append(conf_int)
-        #
-        # # materials
-        #
-        # materials = extract_text("sec", "materials")
-        # d['materials'].append(materials)
-        #
-        # # extract all urls from materials
-        # materials_url = extract_url("sec", "materials", "ext-link")
-        # d['materials_urls'].append(materials_url)
-        #
-        # # get html url
-        # html = str(soup.find("self-uri"))
-        # url_html = re.sub('"','',re.search(r'".*"', html).group(0))
-        # d['article_html_url'].append(url_html)
-        #
-        # # get url to pdf to download
-        # pdf_download = edited_dict["PDF(EN)"]
-        # d['pdf_url_download'].append(pdf_download)
-        #
-        # # acknowledgements
-        # ack = extract_text("ack", "acknowledgement")
-        # d['acknowledgements'].append(ack)
-        #
-        # # data accessibility
-        # data_access = extract_text("sec", "data accessibility")
-        # d['data_acessibility'].append(data_access)
-        #
-        # # extract urls from data_accessibility section
-        # data_access_url = extract_url("sec", "data accessibility", "ext-link")
-        # # print(data_access_url)
-        # d['data_links'].append(data_access_url)
-        #
-        # # different titles for funding info section
-        # fund_info = extract_text("sec", "funding information|funding statement")
-        # d['funding_info'].append(fund_info)
-        #
-        # # different titles for authors contribution section
-        # author_contrib = extract_text("sec",
-        # "authors contributions|author contribution|authors contribution")
-        # d['author_contribution'].append(author_contrib)
-        #
-        # # additional files
-        # add_files = extract_text("sec", "additional file")
-        # d['additional_files'].append(add_files)
-        #
-        # add_files_links = extract_url("sec", "additional file", "ext-link")
-        # d['additional_files_urls'].append(add_files_links)
-        #
-        #
-        #
+#
+#
+#         ######################### BeutifulSoup #################################
+#         soup = BeautifulSoup(response.text, "html.parser")
+#         # create dict to make sure that pdf is pdf and xml is xml, not the other way
+#         xml_pdf = {f"{i.text}":f"{HOME}{i['href']}"for i in soup.find_all("a", class_ = "piwik_download")}
+#         edited_dict = {}
+#         for key, value in xml_pdf.items():
+#             edited_dict[re.sub(r"[\s]", "", key)] = re.sub(r"[\s]", "", value)
+#         print(edited_dict["XML(EN)"])
+#         article_xml = edited_dict["XML(EN)"]
+#         ########################################################################
+#
+        item['title'] = response.xpath('normalize-space(//div[@class="article-title"]/h1)').get()
+        return item
+#         year  = response.xpath('normalize-space(//div[@class="credit-block credit-separator"])').get()
+#         item['publication_year'] = re.search("\d{4}$", year).group(0)
+#         item['article_type'] = response.xpath('normalize-space(//div[@class="article-title"]/h4)').get()
+#         item['doi'] = response.xpath('//div[@class="authors"]/span[@class="span-citation"]/a/text()').get()
+#         item['url'] = response.request.url
+#         item['pdf_url_download'] = edited_dict['PDF(EN)']
+#
+#
+#         def get_url(section_title, variable_name):
+#             select_link = response.xpath(f'//div/h2[contains(text(), "{section_title}")]/following-sibling::*/a')
+#             if select_link != []:
+#                 item[variable_name] = select_link.xpath('./@href').get()
+#             else:
+#                 item[variable_name] = 'NA'
+#
+#         # get_url("Peer Review", 'peer_review_url')
+#         # get_url("Data Accessibility", 'data_accessibility_links')
+#
+#
+#    #      peer_review = response.xpath('//div/h2[contains(text(), "Peer Review")]/following-sibling::p/a')
+#    #      if peer_review != []:
+#    #          item['peer_review_url'] = peer_review.xpath('./@href')
+#    #      else:
+#    #          item['peer_review_url'] = 'NA'
+#    #
+#    #      response.xpath('//div/h2[contains(text(), "Data Accessibility")]/followi
+#    # ...: ng-sibling::p/a/@href').get()
+#
+#         request = scrapy.Request(url = article_xml, callback = self.parse_xml)
+#         request.meta['item'] = item
+#         yield request
+#
+#     def parse_xml(self, response):
+#
+#         item = response.meta['item']
+#
+#         ######################### BeutifulSoup #################################
+#         soup = BeautifulSoup(response.text, "xml")
+#         # get abstract
+#         abs = soup.find('abstract')
+#         if abs != None:
+#             abstr = abs.p.text
+#             abstr = re.sub("\s\s+" , " ", abstract).strip()
+#             abstract = "".join(abstr.splitlines())
+#         item['abstract'] = abstract
+#
+#         # get keywords
+#         kwd = soup.find_all('kwd')
+#         keyword = [keyword.text for keyword in kwd]
+#         keys = ', '.join(keyword)
+#         if keys != '':
+#             keywords = keys
+#         else:
+#             keywords = 'NA'
+#         item['keywords'] = keywords
+#
+#         return item
+#
+#
+# # # 'abstract', 'keywords', 'url', 'pdf_url_download',
+# # # 'peer_rev_url', 'conflict_of_interests', 'acknowledgements',
+# # # 'data_acessibility', 'data_links', 'funding_info', 'author_contributions',
+# # # 'views', 'downloads', 'altmetrics_score', 'altmetrics_total_outputs']
