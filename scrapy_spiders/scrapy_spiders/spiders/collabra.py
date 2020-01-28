@@ -21,7 +21,7 @@ class CollabraSpider(scrapy.Spider):
 
 
     def start_requests(self):
-        start_urls = ['https://www.collabra.org/articles/?f=2&f=3&f=4&f=5&f=6&order=date_published&app=175',]
+        start_urls = ["https://www.collabra.org/6/volume/6/issue/1/",]
         for url in start_urls:
             yield scrapy.Request(url=url, callback=self.parse_article_list)
 
