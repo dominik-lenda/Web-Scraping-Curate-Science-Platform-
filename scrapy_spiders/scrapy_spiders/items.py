@@ -28,7 +28,7 @@ class PsychScienceMetadata(scrapy.Item):
     altmetrics_total_outputs = scrapy.Field()
 
 
-class CollabraPsychMetadata(scrapy.Item):
+class CollabraMetadata(scrapy.Item):
     title = scrapy.Field()
     publication_year = scrapy.Field()
     issue = scrapy.Field()

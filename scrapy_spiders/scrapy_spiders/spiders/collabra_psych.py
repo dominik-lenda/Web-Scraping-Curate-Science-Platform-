@@ -1,42 +1,26 @@
-# -*- coding: utf-8 -*-
-import scrapy
-from scrapy.shell import inspect_response
-import re
-from scrapy_spiders.items import CollabraPsychMetadata
-from scrapy.loader import ItemLoader
-# from bs4 import BeautifulSoup
-
-
-
-HOME = 'https://www.collabra.org'
-
-class CollabraPsychSpider(scrapy.Spider):
-    name = 'collabra_psych'
-    allowed_domains = ['collabra.org']
-    start_urls = (
-    HOME,
-    )
-    custom_settings = {
-    'FEED_EXPORT_FIELDS': ['title', 'publication_year', 'article_type', 'volume',
-    'issue', 'doi', 'abstract', 'keywords', 'url', 'pdf_url_download',
-    'peer_review_url', 'conflict_of_interests', 'acknowledgements',
-    'data_acessibility', 'data_accessibility_links', 'funding_info', 'author_contributions',
-    'views', 'downloads', 'altmetrics_score', 'altmetrics_total_outputs'],
-    }
-    #
-    # def start_requests(self):
-    #     start_urls = HOME
-    #     # for url in start_urls:
-    #         yield scrapy.Request(url = url, callback = self.parse_home)
+# # -*- coding: utf-8 -*-
+# import scrapy
+# from scrapy.shell import inspect_response
+# import re
+# from scrapy_spiders.items import CollabraMetadata
+# from scrapy.loader import ItemLoader
 #
-    def parse(self, response):
-        # l = ItemLoader(item=CollabraPsychMetadata(), response=response)
-        # l.add_xpath('title', '//*[@itemprop="name"][1]/tex
-
-        issue = response.xpath('//li/a[contains(text(), "Issue Archive")]\
-# /@href').get()
-        archive_url = f'{HOME}{issue}'
-#         yield scrapy.Request(url = archive_url, callback = self.parse_archive)
+#
+# HOME = 'https://www.collabra.org'
+#
+# class CollabraPsychSpider(scrapy.Spider):https://www.collabra.org/articles/?app=100&%20order=date_published&%20f=2&%20f=3&%20f=4&%20f=5&%20f=6&page=2
+#     name = 'collabra_psych'
+#     allowed_domains = ['https://www.collabra.org/issue/archive/']
+#     start_urls = (
+#     'https://www.collabra.org/articles/',
+#     )
+#     custom_settings = {
+#     'FEED_EXPORT_FIELDS': ['title', 'publication_year', 'article_type', 'volume',
+#     'issue', 'doi', 'abstract', 'keywords', 'url', 'pdf_url_download',
+#     'peer_review_url', 'conflict_of_interests', 'acknowledgements',
+#     'data_acessibility', 'data_accessibility_links', 'funding_info', 'author_contributions',
+#     'views', 'downloads', 'altmetrics_score', 'altmetrics_total_outputs'],
+#     }
 #
 #     def parse_archive(self, response):
 #         volume_urls = response.css('div[class = "volume-caption volume-\
@@ -46,7 +30,7 @@ class CollabraPsychSpider(scrapy.Spider):
 #             yield scrapy.Request(url = full_url, callback = self.parse_volume)
 #
 #     def parse_volume(self, response):
-#         item = CollabraPsychMetadata()
+#         item = CollabraMetadata()
 #         article_urls = response.css('div[class = "caption-text"] a::attr(href)')
 #
 #         vol_issue_url = response.request.url
