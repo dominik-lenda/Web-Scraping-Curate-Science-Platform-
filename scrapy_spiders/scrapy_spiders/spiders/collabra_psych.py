@@ -3,7 +3,6 @@ import scrapy
 from scrapy.shell import inspect_response
 import re
 from scrapy_spiders.items import CollabraMetadata
-# from scrapy.loader import ItemLoader
 
 
 HOME = 'https://www.collabra.org'
@@ -53,13 +52,6 @@ caption-large"] a::attr(href)')
             # meta - pass item to the next method
             yield scrapy.Request(url = full_xml, callback = self.parse_article_xml, meta={'item': item})
 
-        # for url in article_urls:
-        #     item = CollabraMetadata()
-        #     vol_issue_url = response.request.url
-        #     item['volume'] = re.search("volume/(\d+)", vol_issue_url).group(1)
-        #     item['issue'] = re.search("issue/(\d+)", vol_issue_url).group(1)
-        #     full_url = f'{HOME}{url.get()}'
-        #     yield scrapy.Request(url = full_url, callback = self.parse_article, meta={'item': item})
 
     def parse_article_xml(self, response):
 
@@ -89,15 +81,7 @@ caption-large"] a::attr(href)')
                 text_edited = re.sub(str_title, "", text).strip()
             return "NA" if not text_edited else text_edited
 
-
-        # def get_text_long(tag, *titles):
-        #     for title in titles:
-        #         xpath = f'//title[contains(translate(. ,"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]'
-        #         text = response.xpath(f'normalize-space({xpath}/parent::{tag})').get()
-        #         return "NA" if not text else text
-
         item = response.meta['item']
-
 
         item['title'] = get_text_short('//article-title')
         item['article_type'] = get_text_short('//subject')
@@ -110,33 +94,8 @@ caption-large"] a::attr(href)')
         item['data_accessibility_statement'] = get_text_long('sec', 'data accessibility')
         item['acknowledgements'] = get_text_long('ack', 'acknowledgements')
         item['conflict_of_interests'] = get_text_long('sec', 'conflict of interest', 'competing interests')
-        item['funding_info'] = get_text_long('sec', 'funding info', 'funding statement')
+        item['funding_info'] = get_text_long('sec', 'funding')
         item['author_contributions'] = get_text_long('sec', 'authors contribution', 'author contribution')
 
 
-
-        # 'conflict_of_interests', 'acknowledgements',
-        # # # # # 'data_acessibility', 'data_links', 'funding_info', 'author_contributions'
-
-
-
         return item
-
-
-
-
-
-        # item['title'] = response.xpath('normalize-space(//div[@class="article-title"]/h1)').get()
-#         year  = response.xpath('normalize-space(//div[@class="credit-block credit-separator"])').get()
-#         item['publication_year'] = re.search("\d{4}$", year).group(0)
-#         item['article_type'] = response.xpath('normalize-space(//div[@class="article-title"]/h4)').get()
-#         item['doi'] = response.xpath('//div[@class="authors"]/span[@class="span-citation"]/a/text()').get()
-#         item['abstract'] = response.xpath('normalize-space(//h2[@id="abstract"]/following-sibling::p)').getall()
-#         item['url'] = response.request.url
-#         item['peer_review_url'] = get_url("Peer Review")
-#         item['data_accessibility_links'] = get_url("Data Accessibility")
-#
-#
-# 'conflict_of_interests', 'acknowledgements',
-# # # # # 'data_acessibility', 'data_links', 'funding_info', 'author_contributions',
-# # # # # 'views', 'downloads', 'altmetrics_score', 'altmetrics_total_outputs']
