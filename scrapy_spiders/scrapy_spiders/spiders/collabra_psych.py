@@ -32,27 +32,23 @@ caption-large"] a::attr(href)')
             yield scrapy.Request(url = full_url, callback = self.parse_volume)
 
     def parse_volume(self, response):
-        # item = CollabraMetadata()
-        # XML HERE
-        article_urls = response.xpath('//li[@class="article-block"]/a/@href')
-        #
-        # vol_issue_url = response.request.url
-        # item['volume'] = re.search("volume/(\d+)", vol_issue_url).group(1)
-        # item['issue'] = re.search("issue/(\d+)", vol_issue_url).group(1)
+        # extract XML and PDF links
+        response.xpath('//div[@class = "icon-with-list"]//a[contains(text(), "XML")]')
+
+        for xml_pdf in response.xpath('//div[@class = "icon-with-list"]'):
+            xml = xml_pdf.xpath('normalize-space(.//a[contains(text(), "XML")]/@href)').get()
+            full_xml = f'{HOME}{xml}'
+            pdf = xml_pdf.xpath('normalize-space(.//a[contains(text(), "PDF")]/@href)').get()
+            full_pdf_url = f'{HOME}{pdf}'
+            item['pdf_url_download'] = full_pdf_url
 
         for url in article_urls:
             item = CollabraMetadata()
             vol_issue_url = response.request.url
             item['volume'] = re.search("volume/(\d+)", vol_issue_url).group(1)
             item['issue'] = re.search("issue/(\d+)", vol_issue_url).group(1)
-        # # some of article_urls include links to "collections";
-        # # avoid these links because they do not directly lead to the article
-        #     if bool(re.search("collection", url.get())):
-        #         continue
             full_url = f'{HOME}{url.get()}'
             yield scrapy.Request(url = full_url, callback = self.parse_article, meta={'item': item})
-            # request.meta['item'] = item
-            # yield request
 
     def parse_article(self, response):
         # item = CollabraMetadata()
@@ -65,7 +61,11 @@ caption-large"] a::attr(href)')
 
         item = response.meta['item']
 
-        item['title'] = response.xpath('normalize-space(//div[@class="article-title"]/h1)').get()
+
+
+
+
+        # item['title'] = response.xpath('normalize-space(//div[@class="article-title"]/h1)').get()
 #         year  = response.xpath('normalize-space(//div[@class="credit-block credit-separator"])').get()
 #         item['publication_year'] = re.search("\d{4}$", year).group(0)
 #         item['article_type'] = response.xpath('normalize-space(//div[@class="article-title"]/h4)').get()
