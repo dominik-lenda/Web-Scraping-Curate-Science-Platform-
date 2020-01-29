@@ -44,6 +44,7 @@ class CollabraMetadata(scrapy.Item):
     author_contributions = scrapy.Field()
     funding_info = scrapy.Field()
     acknowledgements = scrapy.Field()
+    data_accessibility_statement = scrapy.Field()
     data_accessibility_links = scrapy.Field()
     views = scrapy.Field()
     downloads = scrapy.Field()
