@@ -32,34 +32,105 @@ caption-large"] a::attr(href)')
             yield scrapy.Request(url = full_url, callback = self.parse_volume)
 
     def parse_volume(self, response):
-        # extract XML and PDF links
-        response.xpath('//div[@class = "icon-with-list"]//a[contains(text(), "XML")]')
+        # response.xpath('//div[@class = "icon-with-list"]//a[contains(text(), "XML")]')
+        for article in response.xpath('//div[@class="article-actions"]'):
+            item = CollabraMetadata()
+            item['url'] = f"{HOME}{article.xpath('./a/@href').get()}"
+            vol_issue_url = response.request.url
+            item['volume'] = re.search("volume/(\d+)", vol_issue_url).group(1)
+            item['issue'] = re.search("issue/(\d+)", vol_issue_url).group(1)
 
-        for xml_pdf in response.xpath('//div[@class = "icon-with-list"]'):
+            # extract XML and PDF links
+            xml_pdf = article.xpath('.//div[@class = "icon-with-list"]')
+        # for xml_pdf in response.xpath('//div[@class = "icon-with-list"]'):
+
             xml = xml_pdf.xpath('normalize-space(.//a[contains(text(), "XML")]/@href)').get()
             full_xml = f'{HOME}{xml}'
             pdf = xml_pdf.xpath('normalize-space(.//a[contains(text(), "PDF")]/@href)').get()
             full_pdf_url = f'{HOME}{pdf}'
             item['pdf_url_download'] = full_pdf_url
 
-        for url in article_urls:
-            item = CollabraMetadata()
-            vol_issue_url = response.request.url
-            item['volume'] = re.search("volume/(\d+)", vol_issue_url).group(1)
-            item['issue'] = re.search("issue/(\d+)", vol_issue_url).group(1)
-            full_url = f'{HOME}{url.get()}'
-            yield scrapy.Request(url = full_url, callback = self.parse_article, meta={'item': item})
+            # meta - pass item to the next method
+            yield scrapy.Request(url = full_xml, callback = self.parse_article_xml, meta={'item': item})
 
-    def parse_article(self, response):
-        # item = CollabraMetadata()
-        def get_url(section_title):
-            select_link = response.xpath(f'//div/h2[contains(text(), "{section_title}")]/following-sibling::*/a')
-            if select_link != []:
-                return select_link.xpath('./@href').get()
+        # for url in article_urls:
+        #     item = CollabraMetadata()
+        #     vol_issue_url = response.request.url
+        #     item['volume'] = re.search("volume/(\d+)", vol_issue_url).group(1)
+        #     item['issue'] = re.search("issue/(\d+)", vol_issue_url).group(1)
+        #     full_url = f'{HOME}{url.get()}'
+        #     yield scrapy.Request(url = full_url, callback = self.parse_article, meta={'item': item})
+
+    def parse_article_xml(self, response):
+
+        def get_url(tag, title):
+            content = response.xpath(f'//{tag}[contains(translate(.,\
+ "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]')
+
+            if content.xpath('.//ext-link').get() != None:
+                url = content.xpath('normalize-space(.//ext-link)').get()
+            elif content.xpath('.//uri').get() != None:
+                url = content.xpath('normalize-space(.//uri)').get()
+            else:
+                url = 'NA'
+            return url
+
+        def get_text_short(xpath):
+            text = response.xpath(f'normalize-space({xpath})').get()
+            return "NA" if not text else text
+
+
+
+# response.xpath('//title[contains(text(), "Data Access")]/parent::sec').get()
+
+        def get_text_long(tag, *title):
+            xpath = f'normalize-space(//title[contains(translate(. ,"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}") or\
+contains(translate(., "ABCDEFGHIJKLMNOPQRSTUVWXYZ","abcdefghijklmnopqrstuvwxyz"), "{title}")]/parent::{tag})'
+            content = response.xpath(xpath).get()
+            if content != '':
+                return content
             else:
                 return 'NA'
 
+
+        def get_text_long(tag, *titles):
+            for title in titles:
+                xpath = f'//title[contains(translate(. ,"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]'
+                text = response.xpath(f'normalize-space({xpath}/parent::{tag})').get()
+                return "NA" if not text else text
+
         item = response.meta['item']
+
+
+        item['title'] = get_text_short('//article-title')
+        item['article_type'] = get_text_short('//subject')
+        item['publication_year'] = get_text_short('//pub-date/year')
+        item['doi'] = get_text_short('//article-id')
+        item['abstract'] = get_text_short('//abstract')
+        keywords = ', '.join(response.xpath('//kwd/text()').getall())
+        item['keywords'] = keywords if keywords else "NA" # empty string is False
+        item['peer_review_url'] = get_url('sec', 'peer review comments')
+        item['data_accessibility_statement'] = get_text_long('sec', 'data accessibility')
+
+
+        # 'conflict_of_interests', 'acknowledgements',
+        # # # # # 'data_acessibility', 'data_links', 'funding_info', 'author_contributions'
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+        return item
 
 
 
@@ -76,9 +147,6 @@ caption-large"] a::attr(href)')
 #         item['data_accessibility_links'] = get_url("Data Accessibility")
 #
 #
-        return item
-# #
-# # # # # 'abstract', 'keywords', 'url', 'pdf_url_download',
-# # # # # 'peer_rev_url', 'conflict_of_interests', 'acknowledgements',
+# 'conflict_of_interests', 'acknowledgements',
 # # # # # 'data_acessibility', 'data_links', 'funding_info', 'author_contributions',
 # # # # # 'views', 'downloads', 'altmetrics_score', 'altmetrics_total_outputs']
