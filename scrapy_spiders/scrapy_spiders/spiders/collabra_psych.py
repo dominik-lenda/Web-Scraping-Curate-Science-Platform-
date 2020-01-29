@@ -87,7 +87,14 @@ caption-large"] a::attr(href)')
                 str_title = response.xpath(f'normalize-space({xpath})').get()
                 text = response.xpath(f'normalize-space({xpath}/parent::{tag})').get()
                 text_edited = re.sub(str_title, "", text).strip()
-                return "NA" if not text_edited else text_edited
+            return "NA" if not text_edited else text_edited
+
+
+        # def get_text_long(tag, *titles):
+        #     for title in titles:
+        #         xpath = f'//title[contains(translate(. ,"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]'
+        #         text = response.xpath(f'normalize-space({xpath}/parent::{tag})').get()
+        #         return "NA" if not text else text
 
         item = response.meta['item']
 
@@ -110,11 +117,6 @@ caption-large"] a::attr(href)')
 
         # 'conflict_of_interests', 'acknowledgements',
         # # # # # 'data_acessibility', 'data_links', 'funding_info', 'author_contributions'
-
-
-
-
-
 
 
 
