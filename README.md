@@ -15,7 +15,7 @@ The extracted data looks like this sample:
         'keywords': 'Independent replication, cumulative knowledge, replication norm',
         'peer_review_url': 'http://dx.doi.org/10.1525/collabra.23.opr',
         'conflict_of_interests': 'The author declares that they have no competing interests.',
-        'vies': '2244',
+        'views': '2244',
         'downloads': '412'
     }
 
