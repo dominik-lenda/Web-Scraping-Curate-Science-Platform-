@@ -138,12 +138,24 @@ caption-large"] a::attr(href)')
             Note: this method uses XPath function - translate() to
             make titles case INSENSITIVE.
             """
+            bullet_list = []
             for title in titles:
                 xpath = f'//title[contains(translate(. ,"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]'
-                str_title = response.xpath(f'normalize-space({xpath})').get()
-                text = response.xpath(f'normalize-space({xpath}/parent::{tag})').get()
-                text_edited = re.sub(str_title, "", text).strip()
-            return "NA" if not text_edited else text_edited
+                section = response.xpath(f'{xpath}/parent::{tag}')
+                # if section includes bullet points, for clarity output each line in newline
+                if section.xpath('./list') != []:
+                    for txt in response.xpath(f'{xpath}/parent::{tag}/descendant::p'):
+                        bullet_point = txt.xpath('normalize-space()').get()
+                        bullet_list.append(bullet_point)
+                    edited_text = '\n'.join(bullet_list)
+                # if section is not bullet-pointed output as normal text
+                else:
+                    str_title = response.xpath(f'normalize-space({xpath})').get()
+                    text = section.xpath('normalize-space()').get()
+                if text != '':
+                    break
+            edited_text  = re.sub(str_title, "", text).strip()
+            return "NA" if not edited_text else edited_text
 
         item = response.meta['item']
 
