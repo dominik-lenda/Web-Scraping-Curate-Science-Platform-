@@ -1,4 +1,31 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# -----------------------------------------------------------
+# Scraps metadata of articles from Journal of Cognition - uses HTML and XML
+#
+# (C) 2019 Dominik Lenda, Wroclaw, Poland
+# email dlenda1729@gmail.com
+# -----------------------------------------------------------
+
+# Metadata variables of articles to scrap --------------------
+
+# Type of a variable : XML tag
+#
+# doi : <article-id>
+# abstract : <abstract>
+# keywords : <kwd>
+# acknowledgements : <ack>
+#
+# Other metadata variables do not have unique tag, the main tag is <sec>
+
+# other metadata variables:
+# conflict of interests, peer review url, article's url (html and pdf),
+# data_accessibility, funding information, authors contribution : <sec>
+
+# since no unique tag for these variables, the program scraps by
+# the unique title (see get_text_long(), get_text_short() and get_url() functions)
+
 import scrapy
 from scrapy.shell import inspect_response
 import re
@@ -59,11 +86,26 @@ caption-large"] a::attr(href)')
     def parse_article_xml(self, response):
 
         def get_text_short(xpath):
+            """ Simple function to get edited text or output 'NA'
+            if the information is not avaialable'
+            Args: xpath: XPath notation
+            """
             text = response.xpath(f'normalize-space({xpath})').get()
             return "NA" if not text else text
 
 
         def get_url(tag, title):
+            """ Extracts URLs.
+            Args:
+            tag: XML tag, e.g. <sec> or <ack>, main tag argument is "sec",
+            title: title of the section, e.g "funding information".
+
+            Returns:
+            Content of the section prepared to save inside the table or NA if paper
+            does not include specified section.
+            Note: this method uses XPath function - translate() to
+            make titles case INSENSITIVE.
+            """
             content = response.xpath(f'//{tag}[contains(translate(.,\
  "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]')
 
@@ -82,6 +124,20 @@ caption-large"] a::attr(href)')
 
 
         def get_text_long(tag, *titles):
+            """ Extracts text.
+            Args:
+            tag: XML tag, e.g. <sec> or <ack>, main tag argument is "sec",
+            *titles: titles of the section, e.g "data accessibility statement"
+            Note: uses *args syntax, thus various forms of the same title
+            are examined, e.g. conflict of interests, competing interests.
+
+            Returns:
+            Content of the section prepared to save inside the table or NA if paper
+            does not include specified section.
+
+            Note: this method uses XPath function - translate() to
+            make titles case INSENSITIVE.
+            """
             for title in titles:
                 xpath = f'//title[contains(translate(. ,"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]'
                 str_title = response.xpath(f'normalize-space({xpath})').get()
@@ -113,6 +169,14 @@ caption-large"] a::attr(href)')
 
     def parse_article_html(self, response):
         def get_stats(stats):
+            """ Extracts number of views and number of downloads.
+            Args:
+            stats: label of statistics, e.g. 'Views' or 'Downloads'
+            Note: it is CASESENSITIVE
+
+            Returns:
+            Number of views or downloads of an article.
+            """
             content = response.xpath(f'//div[@class="article-stats"]/\
             a[contains(., "{stats}")]/div[@class="stat-number"]/text()').get()
             return "NA" if not content else content

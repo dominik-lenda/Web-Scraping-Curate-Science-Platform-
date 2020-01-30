@@ -1,4 +1,21 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
+
+# -----------------------------------------------------------
+# Scraps metadata of articles from Psychological Science
+# Only open access articles with at least two badges are included, e.g.
+# open materials and preregistration
+#
+# (C) 2019 Dominik Lenda, Wroclaw, Poland
+# email dlenda1729@gmail.com
+# -----------------------------------------------------------
+
+# Examples of metadata to scrap --------------------
+# doi, abstract,  keywords, "Declaration of Conflicting Interests", article's URL,
+# article PDF URL (sci-hub URL), "Open Practices", "Funding",
+# "Authors Contributions",  altmetrics score
+
+
 import scrapy
 import re
 from scrapy.shell import inspect_response
@@ -6,17 +23,6 @@ from scrapy_spiders.items import PsychScienceMetadata
 from scrapy.loader import ItemLoader
 import json
 
-# 3. Psychological Science: all articles since badges started in 2014 that have an
-# "Open Practices" statement, i.e., starting at Volume 25 Issue 5, May 2014
-# (though only 1 article in that issue); 0 in next issue; 6 articles in Issue 7)
-# (at least 2 badges)
-#  Metadata to extract (from PDF and HTML):
-# • title, year, DOI, article type (don't think this is available), abstract text,
-# "Keywords", # of downloads (from an article's "metrics" subpage; example),
-# "Declaration of Conflicting Interests", article HTML URL (only if open access),
-# article PDF URL (sci-hub URL), "Open Practices" statement (extract all URLs and
-# save in open.content.URLs field), "Funding", and "Authors Contributions",
-# number of views, number of downloads
 
 HOME = "https://journals.sagepub.com"
 
@@ -70,7 +76,16 @@ class PsychScienceSpider(scrapy.Spider):
 
 
     def parse_article(self, response):
+
         def extract_data(title):
+            """ Extracts text of the section.
+            Args:
+            title: title of the section, e.g "Authors Contribution"
+            Note: it is CASESENSITIVE
+
+            Returns:
+            Edited text of the section
+            """
             p_tags_values = []
             for p_tag in response.xpath('//span[@class="NLM_fn"]'):
                 # check if any of elements is NA, allows to save clear data
