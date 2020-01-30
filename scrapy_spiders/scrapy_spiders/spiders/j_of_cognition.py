@@ -42,9 +42,10 @@ class Journal_of_Cognition(scrapy.Spider):
     custom_settings = {
     'FEED_EXPORT_FIELDS': ['title', 'publication_year', 'article_type', 'volume',
     'issue', 'doi', 'abstract', 'keywords', 'url', 'pdf_url_download',
-    'peer_review_url', 'conflict_of_interests', 'acknowledgements', 'materials',
-    'materials_urls', 'data_accessibility_statement', 'data_accessibility_links',
-    'funding_info', 'author_contributions', 'views', 'downloads'],
+    'conflict_of_interests', 'acknowledgements', 'materials', 'materials_urls',
+    'data_accessibility_statement', 'data_accessibility_links',
+    'additional_files', 'additional_files_links', 'funding_info',
+    'author_contributions', 'views', 'downloads'],
     #, 'altmetrics_score', 'altmetrics_total_outputs'],
     }
 
@@ -142,8 +143,6 @@ caption-large"] a::attr(href)')
             for title in titles:
                 xpath = f'//title[contains(translate(. ,"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]'
                 section = response.xpath(f'{xpath}/parent::{tag}')
-<<<<<<< HEAD
-
                 # if section with specific title matches
                 if section != []:
                     # if section contains bullet points
@@ -160,22 +159,6 @@ caption-large"] a::attr(href)')
                 else:
                     edited_text = "NA"
             return edited_text
-=======
-                # if section includes bullet points, for clarity output each line in newline
-                if section.xpath('./list') != []:
-                    for txt in response.xpath(f'{xpath}/parent::{tag}/descendant::p'):
-                        bullet_point = txt.xpath('normalize-space()').get()
-                        bullet_list.append(bullet_point)
-                    edited_text = '\n'.join(bullet_list)
-                # if section is not bullet-pointed output as normal text
-                else:
-                    str_title = response.xpath(f'normalize-space({xpath})').get()
-                    text = section.xpath('normalize-space()').get()
-                if text != '':
-                    break
-            edited_text  = re.sub(str_title, "", text).strip()
-            return "NA" if not edited_text else edited_text
->>>>>>> 8c06832534b51eb9995b9782c72f8df60f2fcc72
 
         item = response.meta['item']
 
@@ -186,16 +169,16 @@ caption-large"] a::attr(href)')
         item['abstract'] = get_text_short('//abstract')
         keywords = ', '.join(response.xpath('//kwd/text()').getall())
         item['keywords'] = keywords if keywords else "NA" # empty string is False
-        item['peer_review_url'] = get_url('sec', 'peer review comments')
         item['data_accessibility_statement'] = get_text_long('sec', 'data accessibility')
         item['acknowledgements'] = get_text_long('ack', 'acknowledgements')
         item['conflict_of_interests'] = get_text_long('sec', 'conflict of', 'competing interests')
         item['funding_info'] = get_text_long('sec', 'funding')
         item['author_contributions'] = get_text_long('sec', 'authors contribution', 'author contribution')
         item['data_accessibility_links'] = get_url('sec', 'data accessibility')
+        item['additional_files'] = get_text_long('sec', 'additional file')
+        item['additional_files_links'] = get_url('sec', 'additional file')
         item['materials'] = get_text_long('sec', 'materials')
         item['materials_urls'] = get_url('sec', 'materials')
-
 
         yield scrapy.Request(url = item['url'], callback = self.parse_article_html, meta={'item': item})
 
