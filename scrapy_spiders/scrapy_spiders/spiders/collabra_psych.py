@@ -26,8 +26,6 @@
 # since no unique tag for these variables, the program scraps by
 # the unique title (see get_text_long(), get_text_short() and get_url() functions)
 
-
-
 import scrapy
 from scrapy.shell import inspect_response
 import re
@@ -125,7 +123,7 @@ caption-large"] a::attr(href)')
             tag: XML tag, e.g. <sec> or <ack>, main tag argument is "sec",
             *titles: titles of the section, e.g "data accessibility statement"
             Note: uses *args syntax, thus various forms of the same title
-            are examined, e.g. conflict of interests, competing interests.
+            might be examined, e.g. conflict of interests, competing interests.
 
             Returns:
             Content of the section prepared to save inside the table or NA if paper
@@ -134,14 +132,27 @@ caption-large"] a::attr(href)')
             Note: this method uses XPath function - translate() to
             make titles case INSENSITIVE.
             """
+            bullet_list = []
             for title in titles:
                 xpath = f'//title[contains(translate(. ,"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]'
-                str_title = response.xpath(f'normalize-space({xpath})').get()
-                text = response.xpath(f'normalize-space({xpath}/parent::{tag})').get()
-                if text != '':
+                section = response.xpath(f'{xpath}/parent::{tag}')
+
+                # if section with specific title matches
+                if section != []:
+                    # if section contains bullet points
+                    if section.xpath('./list') != []:
+                        for txt in response.xpath(f'{xpath}/parent::{tag}/descendant::p'):
+                            bullet_point = txt.xpath('normalize-space()').get()
+                            bullet_list.append(bullet_point)
+                        edited_text = '. '.join(bullet_list)
+                    else:
+                        str_title = response.xpath(f'normalize-space({xpath})').get()
+                        text = section.xpath('normalize-space()').get()
+                        edited_text  = re.sub(str_title, "", text).strip()
                     break
-            text_edited = re.sub(str_title, "", text).strip()
-            return "NA" if not text_edited else text_edited
+                else:
+                    edited_text = "NA"
+            return edited_text
 
         item = response.meta['item']
 
@@ -156,7 +167,7 @@ caption-large"] a::attr(href)')
         item['keywords'] = keywords if keywords else "NA" # empty string is False
         item['peer_review_url'] = get_url('sec', 'peer review comments')
         item['data_accessibility_statement'] = get_text_long('sec', 'data accessibility')
-        item['acknowledgements'] = get_text_long('ack', 'acknowledgements')
+        item['acknowledgements'] = get_text_long('ack', 'acknowledgements', 'acknowledgments')
         item['conflict_of_interests'] = get_text_long('sec', 'conflict of interest', 'competing interest')
         item['funding_info'] = get_text_long('sec', 'funding')
         item['author_contributions'] = get_text_long('sec', 'authors contribution', 'author contribution')

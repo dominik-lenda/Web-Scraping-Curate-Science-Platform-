@@ -30,7 +30,6 @@ command:
     jofcognition
     psych_science
 
-Both spiders extract similar metadata. 
 
 You can learn more about the spiders by going through the
 [Scrapy Tutorial](http://doc.scrapy.org/en/latest/intro/tutorial.html).

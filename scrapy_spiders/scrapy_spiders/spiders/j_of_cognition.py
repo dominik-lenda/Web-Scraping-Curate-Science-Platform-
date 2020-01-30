@@ -129,7 +129,7 @@ caption-large"] a::attr(href)')
             tag: XML tag, e.g. <sec> or <ack>, main tag argument is "sec",
             *titles: titles of the section, e.g "data accessibility statement"
             Note: uses *args syntax, thus various forms of the same title
-            are examined, e.g. conflict of interests, competing interests.
+            might be examined, e.g. conflict of interests, competing interests.
 
             Returns:
             Content of the section prepared to save inside the table or NA if paper
@@ -138,12 +138,27 @@ caption-large"] a::attr(href)')
             Note: this method uses XPath function - translate() to
             make titles case INSENSITIVE.
             """
+            bullet_list = []
             for title in titles:
                 xpath = f'//title[contains(translate(. ,"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]'
-                str_title = response.xpath(f'normalize-space({xpath})').get()
-                text = response.xpath(f'normalize-space({xpath}/parent::{tag})').get()
-                text_edited = re.sub(str_title, "", text).strip()
-            return "NA" if not text_edited else text_edited
+                section = response.xpath(f'{xpath}/parent::{tag}')
+
+                # if section with specific title matches
+                if section != []:
+                    # if section contains bullet points
+                    if section.xpath('./list') != []:
+                        for txt in response.xpath(f'{xpath}/parent::{tag}/descendant::p'):
+                            bullet_point = txt.xpath('normalize-space()').get()
+                            bullet_list.append(bullet_point)
+                        edited_text = '. '.join(bullet_list)
+                    else:
+                        str_title = response.xpath(f'normalize-space({xpath})').get()
+                        text = section.xpath('normalize-space()').get()
+                        edited_text  = re.sub(str_title, "", text).strip()
+                    break
+                else:
+                    edited_text = "NA"
+            return edited_text
 
         item = response.meta['item']
 
