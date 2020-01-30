@@ -3,6 +3,7 @@ import scrapy
 from scrapy.shell import inspect_response
 import re
 from scrapy_spiders.items import CollabraMetadata
+import json
 
 
 HOME = 'https://www.collabra.org'
@@ -15,7 +16,7 @@ class CollabraPsychSpider(scrapy.Spider):
     'issue', 'doi', 'abstract', 'keywords', 'url', 'pdf_url_download',
     'peer_review_url', 'conflict_of_interests', 'acknowledgements',
     'data_accessibility_statement', 'data_accessibility_links', 'funding_info', 'author_contributions',
-    'views', 'downloads', 'altmetrics_score', 'altmetrics_total_outputs'],
+    'views', 'downloads'],#, 'altmetrics_score', 'altmetrics_total_outputs'],
     }
 
     def start_requests(self):
@@ -103,4 +104,30 @@ caption-large"] a::attr(href)')
         item['author_contributions'] = get_text_long('sec', 'authors contribution', 'author contribution')
         item['data_accessibility_links'] = get_url('sec', 'data accessibility')
 
+
+        yield scrapy.Request(url = item['url'], callback = self.parse_article_html, meta={'item': item})
+
+    def parse_article_html(self, response):
+        def get_stats(stats):
+            content = response.xpath(f'//div[@class="article-stats"]/\
+            a[contains(., "{stats}")]/div[@class="stat-number"]/text()').get()
+            return "NA" if not content else content
+        item = response.meta['item']
+
+        item['views'] = get_stats('Views')
+        item['downloads'] = get_stats('Downloads')
+
         return item
+
+
+        # add altmetrics score
+    #     api_altmetric_home = "https://api.altmetric.com/v1/doi/"
+    #     altmetric_url = f'{api_altmetric_home}{item["doi"]}'
+    #     yield scrapy.Request(url = altmetric_url, callback = self.parse_altmetrics, meta={'item': item})
+    #
+    # def parse_altmetrics(self, response):
+    #     item = response.meta["item"]
+    #     dictionary_txt = response.css('p::text').get()
+    #     d = json.loads(dictionary_txt)
+    #     item['altmetrics_score'] = d['score']
+    #     item['altmetrics_total_outputs'] = d['context']['all']['count']
