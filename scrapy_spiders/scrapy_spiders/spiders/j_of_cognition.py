@@ -1,37 +1,28 @@
 # -*- coding: utf-8 -*-
-#!/usr/bin/env python
-# -*- coding: utf-8 -*-
-
-# -----------------------------------------------------------
-# Scraps metadata from Collabra:Psychology
-#
-# (C) 2019 Dominik Lenda, Wroclaw, Poland
-# email dlenda1729@gmail.com
-# -----------------------------------------------------------
-
-
 import scrapy
 from scrapy.shell import inspect_response
 import re
-from scrapy_spiders.items import CollabraMetadata
+from scrapy_spiders.items import JofCognitionMetadata
 import json
 
 
-HOME = 'https://www.collabra.org'
+HOME = 'https://www.journalofcognition.org'
 
-class CollabraPsychSpider(scrapy.Spider):
-    name = 'collabra_psych'
+
+class Journal_of_Cognition(scrapy.Spider):
+    name = 'jofcognition'
 
     custom_settings = {
     'FEED_EXPORT_FIELDS': ['title', 'publication_year', 'article_type', 'volume',
     'issue', 'doi', 'abstract', 'keywords', 'url', 'pdf_url_download',
-    'peer_review_url', 'conflict_of_interests', 'acknowledgements',
-    'data_accessibility_statement', 'data_accessibility_links', 'funding_info', 'author_contributions',
-    'views', 'downloads'],#, 'altmetrics_score', 'altmetrics_total_outputs'],
+    'peer_review_url', 'conflict_of_interests', 'acknowledgements', 'materials',
+    'materials_urls', 'data_accessibility_statement', 'data_accessibility_links',
+    'funding_info', 'author_contributions', 'views', 'downloads'],
+    #, 'altmetrics_score', 'altmetrics_total_outputs'],
     }
 
     def start_requests(self):
-        start_urls = ['https://www.collabra.org/issue/archive']
+        start_urls = ['https://www.journalofcognition.org/issue/archive/']
         for url in start_urls:
             yield scrapy.Request(url=url, callback=self.parse_archive)
 
@@ -45,7 +36,7 @@ caption-large"] a::attr(href)')
     def parse_volume(self, response):
         # response.xpath('//div[@class = "icon-with-list"]//a[contains(text(), "XML")]')
         for article in response.xpath('//div[@class="article-actions"]'):
-            item = CollabraMetadata()
+            item = JofCognitionMetadata()
             item['url'] = f"{HOME}{article.xpath('./a/@href').get()}"
             vol_issue_url = response.request.url
             item['volume'] = re.search("volume/(\d+)", vol_issue_url).group(1)
@@ -114,6 +105,8 @@ caption-large"] a::attr(href)')
         item['funding_info'] = get_text_long('sec', 'funding')
         item['author_contributions'] = get_text_long('sec', 'authors contribution', 'author contribution')
         item['data_accessibility_links'] = get_url('sec', 'data accessibility')
+        item['materials'] = get_text_long('sec', 'materials')
+        item['materials_urls'] = get_url('sec', 'materials')
 
 
         yield scrapy.Request(url = item['url'], callback = self.parse_article_html, meta={'item': item})
