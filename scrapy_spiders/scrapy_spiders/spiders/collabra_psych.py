@@ -65,12 +65,17 @@ caption-large"] a::attr(href)')
  "ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]')
 
             if content.xpath('.//ext-link').get() != None:
-                url = content.xpath('normalize-space(.//ext-link)').get()
+                url_list = content.xpath('.//ext-link')
+                for url in url_list:
+                    all = [url.xpath('normalize-space()').get() for url in url_list]
+                    return ', '.join(all)
             elif content.xpath('.//uri').get() != None:
-                url = content.xpath('normalize-space(.//uri)').get()
+                url_list = content.xpath('.//uri')
+                for url in url_list:
+                    all = [url.xpath('normalize-space()').get() for url in url_list]
+                    return ', '.join(all)
             else:
-                url = 'NA'
-            return url
+                return 'NA'
 
 
         def get_text_long(tag, *titles):
@@ -96,6 +101,6 @@ caption-large"] a::attr(href)')
         item['conflict_of_interests'] = get_text_long('sec', 'conflict of interest', 'competing interests')
         item['funding_info'] = get_text_long('sec', 'funding')
         item['author_contributions'] = get_text_long('sec', 'authors contribution', 'author contribution')
-
+        item['data_accessibility_links'] = get_url('sec', 'data accessibility')
 
         return item
