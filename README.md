@@ -49,8 +49,6 @@ If you want to save the scraped data to a file, you can pass the `-o` option:
     
     $ scrapy crawl psych_science -o psychological_science.csv
  
-
-<div style="text-align:center">
+<p align="center">
 <img align = "middle" width="150" height = "150" src="https://pbs.twimg.com/profile_images/1079541522863800320/p0FxpVnr_400x400.jpg" alt="CS logo">
-</div>
-
+</p>
