@@ -138,7 +138,9 @@ caption-large"] a::attr(href)')
                 xpath = f'//title[contains(translate(. ,"ABCDEFGHIJKLMNOPQRSTUVWXYZ", "abcdefghijklmnopqrstuvwxyz"), "{title}")]'
                 str_title = response.xpath(f'normalize-space({xpath})').get()
                 text = response.xpath(f'normalize-space({xpath}/parent::{tag})').get()
-                text_edited = re.sub(str_title, "", text).strip()
+                if text != '':
+                    break
+            text_edited = re.sub(str_title, "", text).strip()
             return "NA" if not text_edited else text_edited
 
         item = response.meta['item']
@@ -155,7 +157,7 @@ caption-large"] a::attr(href)')
         item['peer_review_url'] = get_url('sec', 'peer review comments')
         item['data_accessibility_statement'] = get_text_long('sec', 'data accessibility')
         item['acknowledgements'] = get_text_long('ack', 'acknowledgements')
-        item['conflict_of_interests'] = get_text_long('sec', 'conflict of interest', 'competing interests')
+        item['conflict_of_interests'] = get_text_long('sec', 'conflict of interest', 'competing interest')
         item['funding_info'] = get_text_long('sec', 'funding')
         item['author_contributions'] = get_text_long('sec', 'authors contribution', 'author contribution')
         item['data_accessibility_links'] = get_url('sec', 'data accessibility')
