@@ -37,9 +37,6 @@ class PsychScienceSpider(scrapy.Spider):
             yield scrapy.Request(issue_url, callback = self.parse_issue)
 
     def parse_issue(self, response):
-        """Get articles with at least two badges: open data and open material, or
-        open data and preregistration, or open material and preregistration.
-        """
         year = response.xpath('//div[@class="journalNavTitle"]/text()').get()
         year1 = re.search("\d{4}$", year).group(0)
         for article in response.css('tr'):
@@ -56,8 +53,6 @@ class PsychScienceSpider(scrapy.Spider):
                 open_data = 1 if open_data_l != [] else 0
                 open_materials = 1 if open_materials_l != [] else 0
                 prereg = 1 if prereg_l != [] else 0
-
-
 
                 yield {
                 "access" : access,
