@@ -1,5 +1,5 @@
 # CurateScienceBots
-The project scraps metadata of research articles from academic journals such as Psychological Science, Collabra: Psychology, Journal of Cognition to feed database of [Curate Science](https://curatescience.org/app/).
+The project aims to scrap metadata of research articles from academic journals such as Psychological Science, Collabra: Psychology, Journal of Cognition to feed database of [Curate Science](https://curatescience.org/app/).
 
 [Curate Science](https://curatescience.org/app/) is a platform whose goal is to help in verification of transparency and credibility of the research.
 
