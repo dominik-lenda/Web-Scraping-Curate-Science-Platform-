@@ -19,7 +19,7 @@ ipython-genutils==0.2.0
 jdcal==1.4.1
 jedi==0.15.2
 lxml==4.4.2
-numpy==1.18.1
+numpy==1.22.0
 openpyxl==3.0.2
 pandas==0.25.3
 parsel==1.5.2
